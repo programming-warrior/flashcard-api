@@ -7,14 +7,21 @@ import pool from "./db";
 import { userSchema, flashCardContentSchema, idSchema } from "./types";
 import { authenticateAdmin } from "./middleware";
 import { v4 as uuidv4 } from 'uuid';
+import cors from "cors";
+
 
 const app = express();
+
+const corsOptions = {
+    origin: '*', 
+};
+app.use(cors(corsOptions));
 app.use(express.json())
 
 
 
 
-app.post("/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
     const user = userSchema.safeParse(req.body);
     if (!user.success) {
         return res.status(400).send(user.error.message);
@@ -43,7 +50,24 @@ app.post("/login", async (req, res) => {
 
 });
 
-app.post('/create', authenticateAdmin, async (req, res) => {
+app.get('/',(req,res)=>{
+    return res.send("hello world");
+})
+
+app.get('/api/fetch',async(req,res)=>{
+    const page=req.query;
+    console.log(page);
+    try{
+        const [rows]=await pool.query('SELECT * from flashcontent ');
+        return res.status(200).json(rows);
+    }
+    catch(e:any){
+        return res.status(500).json({error:e.message});
+    }
+})
+
+
+app.post('/api/create', authenticateAdmin, async (req, res) => {
     const content = flashCardContentSchema.safeParse(req.body);
 
     if (!content.success) return res.status(400).send(content.error.message);
@@ -64,7 +88,7 @@ app.post('/create', authenticateAdmin, async (req, res) => {
 
 })
 
-app.delete('/delete/:id', authenticateAdmin, async (req, res) => {
+app.delete('/api/delete/:id', authenticateAdmin, async (req, res) => {
     const id = idSchema.safeParse(req.params.id);
     if (!id.success) return res.status(401).send(id.error.message);
 
@@ -82,7 +106,7 @@ app.delete('/delete/:id', authenticateAdmin, async (req, res) => {
 })
 
 
-app.put('/update/:id', authenticateAdmin, async (req, res) => {
+app.put('/api/update/:id', authenticateAdmin, async (req, res) => {
 
     const content = flashCardContentSchema.safeParse(req.body);
 
