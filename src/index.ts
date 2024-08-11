@@ -22,6 +22,7 @@ app.use(express.json())
 
 
 app.post("/api/login", async (req, res) => {
+    console.log(req.body);
     const user = userSchema.safeParse(req.body);
     if (!user.success) {
         return res.status(400).send(user.error.message);
@@ -91,11 +92,12 @@ app.post('/api/create', authenticateAdmin, async (req, res) => {
 app.delete('/api/delete/:id', authenticateAdmin, async (req, res) => {
     const id = idSchema.safeParse(req.params.id);
     if (!id.success) return res.status(401).send(id.error.message);
+    console.log(id);
 
     try {
         const [rows]: any = await pool.query('DELETE FROM flashcontent WHERE id=?', [id.data]);
 
-        if (rows.affectedRows > 0) return res.status(201);
+        if (rows.affectedRows > 0) return res.status(201).end();
 
         return res.status(404).json({ error: "invalid id" });
     }
@@ -124,7 +126,7 @@ app.put('/api/update/:id', authenticateAdmin, async (req, res) => {
             [question, answer, id.data]
         );
 
-        if (rows.affectedRows > 0) return res.status(201);
+        if (rows.affectedRows > 0) return res.status(201).end();
 
         return res.status(404).json({ error: "invalid id" });
     }
