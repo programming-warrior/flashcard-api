@@ -3,10 +3,13 @@ import dotevn from "dotenv";
 dotevn.config();
 import jwt from "jsonwebtoken";
 import pool from "./db";
-import { userSchema } from "./types";
+import { userSchema,flashCardContentSchema } from "./types";
+import { authenticateAdmin } from "./middleware";
+import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 app.use(express.json())
+
 
 
 
@@ -38,6 +41,27 @@ app.post("/login", async (req, res) => {
     }
 
 });
+
+app.post('/create',authenticateAdmin,async(req,res)=>{
+    const content=flashCardContentSchema.safeParse(req.body);
+
+    if(!content.success) return res.status(400).send(content.error.message);
+
+    const {question,answer}=content.data;
+    const id=uuidv4()
+
+    try{
+        const [rows]: any = await pool.query('INSERT INTO flashcontent values(?,?,?)',[id,question,answer]);
+
+        if(rows.affectedRows>0) return res.status(201).json({id,question,answer});
+
+        return res.status(500).json({error:"something went wrong"});
+    }
+    catch(e:any){
+        return res.status(500).json({error:e.message});
+    }
+
+})
 
 app.listen(process.env.PORT, () => {
     console.log(`listening on PORT ${process.env.PORT}`);
