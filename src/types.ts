@@ -11,6 +11,8 @@ export const flashCardContentSchema=z.object({
     answer:z.string()
 })
 
+export const idSchema=z.string().uuid();
+
 export interface RequestWithUsername extends Request{
     username?:string;
 }
