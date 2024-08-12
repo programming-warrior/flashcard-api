@@ -22,7 +22,6 @@ app.use(express.json())
 
 
 app.post("/api/login", async (req, res) => {
-    console.log(req.body);
     const user = userSchema.safeParse(req.body);
     if (!user.success) {
         return res.status(400).send(user.error.message);
@@ -57,7 +56,6 @@ app.get('/',(req,res)=>{
 
 app.get('/api/fetch',async(req,res)=>{
     const page=req.query;
-    console.log(page);
     try{
         const [rows]=await pool.query('SELECT * from flashcontent ');
         return res.status(200).json(rows);
@@ -92,7 +90,6 @@ app.post('/api/create', authenticateAdmin, async (req, res) => {
 app.delete('/api/delete/:id', authenticateAdmin, async (req, res) => {
     const id = idSchema.safeParse(req.params.id);
     if (!id.success) return res.status(401).send(id.error.message);
-    console.log(id);
 
     try {
         const [rows]: any = await pool.query('DELETE FROM flashcontent WHERE id=?', [id.data]);
