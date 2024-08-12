@@ -24,7 +24,7 @@ app.use(express.json())
 app.post("/api/login", async (req, res) => {
     const user = userSchema.safeParse(req.body);
     if (!user.success) {
-        return res.status(400).send(user.error.message);
+        return res.status(400).json({error:"invalid credentials"});
     }
     const { username, password } = user.data;
     try {
@@ -33,7 +33,7 @@ app.post("/api/login", async (req, res) => {
         const result: any = rows[0];
 
         if (result.password !== password) {
-            return res.status(400).json({ message: "invalid credentials" });
+            return res.status(400).json({ error: "invalid credentials" });
         }
 
         const token = jwt.sign(
@@ -42,10 +42,12 @@ app.post("/api/login", async (req, res) => {
             { expiresIn: '1h' }
         );
 
+        await pool.query('INSERT INTO session VALUES(?)',[token]);
+
         return res.status(200).json({ token });
     }
     catch (e: any) {
-        return res.status(500).json({ message: e.message });
+        return res.status(500).json({ error:"something went wrong"});
     }
 
 });
@@ -82,7 +84,7 @@ app.post('/api/create', authenticateAdmin, async (req, res) => {
         return res.status(500).json({ error: "something went wrong" });
     }
     catch (e: any) {
-        return res.status(500).json({ error: e.message });
+        return res.status(500).json({ error: "something went wrong" });
     }
 
 })
@@ -131,6 +133,18 @@ app.put('/api/update/:id', authenticateAdmin, async (req, res) => {
         return res.status(500).json({ error: e.message });
     }
 
+})
+
+app.post('/api/token/delete',async (req,res)=>{
+    let token=req.body.token;
+    token=typeof(token)==='string' && token.trim().length>0 ? token : null;
+    if(!token) return res.status(404).json({error:"no token found"});
+    console.log(token);
+    const [row]:any=await pool.query('DELETE FROM session WHERE token=? ',[token]);
+    if(row.affectedRows>0){
+        return res.status(201).end();
+    }
+    return res.status(500).json({error:"server error"});
 })
 
 

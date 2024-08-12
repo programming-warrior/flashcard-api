@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build":"npx tsc -b",
-    "start":"node ./dist"
+    "start":"node ./dist/index.js"
   },
   "author": "Yusuf Azam",
   "license": "ISC",
