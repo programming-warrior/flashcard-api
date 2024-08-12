@@ -31,6 +31,7 @@ app.post("/api/login", async (req, res) => {
         const [rows]: any = await pool.query('SELECT * FROM  admin WHERE username=?', [username]);
 
         const result: any = rows[0];
+        if(!result) return res.status(400).json({error:"invalid credentials"});
 
         if (result.password !== password) {
             return res.status(400).json({ error: "invalid credentials" });
